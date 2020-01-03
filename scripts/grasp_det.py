@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from grasp_detection.srv import graspRequest, graspRequestResponse
+
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -49,7 +51,7 @@ class DetectionManager:
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.imageCallback)
         self.depth_topic = rospy.get_param("~depth_topic","/camera/aligned_depth_to_color/image_raw")
         self.depth_sub = rospy.Subscriber(self.depth_topic, Image, self.depthCallback)
-        #self.detect_server = rospy.Service()
+        self.detect_server = rospy.Service("grasp_request", graspRequest, self.handle_detection_request)
         self.grasp_center = [0., 0.]
         self.grasp_angle = 0.
         self.rgb = None
@@ -59,10 +61,6 @@ class DetectionManager:
         self.cvb = CvBridge()
         self.mask = cv2.imread(os.path.join(self.ROOT_DIR,'data/mask.jpg'),0)
         self.det_viz = None
-        #self.mask = self.mask[:,:,np.newaxis]
-        #self.mask = np.stack([self.mask, self,mask, self.mask], axis=2)
-
-        self.cnt = 0
 
         # Detection initialization
         self.root_path = '/home/js/Documents/catkin_ws/src/grasp_detection/scripts'
@@ -103,15 +101,8 @@ class DetectionManager:
                 self.rgd_pub.publish(self.cvb.cv2_to_imgmsg(self.rgd, "rgb8"))
             except CvBridgeError as e:
                 print(e)
-            
-            self.cnt += 1
-            #rospy.loginfo("{}".format(self.cnt))
-            if self.cnt == 100:
-                self.cnt = 0
-                self.detect(self.sess, self.net, self.rgd)
-                rospy.loginfo("Grasp center:({},{})".format(self.grasp_center[0], self.grasp_center[1]))
-                rospy.loginfo("Grasp angle:{}".format(self.grasp_angle))
 
+            if self.det_viz is not None:
                 try:
                     self.result_pub.publish(self.cvb.cv2_to_imgmsg(self.det_viz, "rgb8"))
                 except CvBridgeError as e:
@@ -210,6 +201,17 @@ class DetectionManager:
         cv2.line(imOut, (r_bbox[3,0],r_bbox[3,1]), (r_bbox[0,0], r_bbox[0,1]), (255,0,0))
 
         self.result_pub.publish(self.cvb.cv2_to_imgmsg(imOut, "rgb8"))
+
+    def handle_detection_request(self, req):
+        rospy.loginfo("Request type is {}".format(req.request))
+        if self.rgd is not None:
+            self.detect(self.sess, self.net, self.rgd)
+            rospy.loginfo("Grasp center:({},{})".format(self.grasp_center[0], self.grasp_center[1]))
+            rospy.loginfo("Grasp angle:{}".format(self.grasp_angle))
+            return graspRequestResponse(self.grasp_center[0], self.grasp_center[1], float(self.grasp_angle))
+        else:
+            rospy.logerr("RGD input image is NULL.")
+
 
 if __name__ == "__main__":
     rospy.init_node("get_image_node")
