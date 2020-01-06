@@ -209,7 +209,10 @@ class DetectionManager:
             self.detect(self.sess, self.net, self.rgd)
             rospy.loginfo("Grasp center:({},{})".format(self.grasp_center[0], self.grasp_center[1]))
             rospy.loginfo("Grasp angle:{}".format(self.grasp_angle))
-            self.grasp_depth = float(self.depth[int(self.grasp_center[1], self.grasp_center[0])]
+            x = int(self.grasp_center[0])
+            y = int(self.grasp_center[1])
+            rospy.loginfo("Depth shape:{}".format(self.depth.shape))
+            self.grasp_depth = float(self.depth[y, x])
             return graspRequestResponse(self.grasp_center[0], self.grasp_center[1], self.grasp_depth, float(self.grasp_angle))
         else:
             rospy.logerr("RGD input image is NULL.")
