@@ -54,6 +54,7 @@ class DetectionManager:
         self.detect_server = rospy.Service("grasp_request", graspRequest, self.handle_detection_request)
         self.grasp_center = [0., 0.]
         self.grasp_angle = 0.
+        self.grasp_depth = 0.
         self.rgb = None
         self.depth = None
         self.depthr_ = None # Re-ranged depth
@@ -156,7 +157,7 @@ class DetectionManager:
                 self.grasp_angle = 9*(tmp-1)
 
     def vis_detections(self, im, class_name, dets, thresh=0.5):
-        """Draw detected bounding boxes."""
+        """Draw detected bounding boxes.""" class_name, dets, thresh=0.5):
         inds = np.where(dets[:, -1] >= thresh)[0]
         if len(inds) == 0:
             return
@@ -208,7 +209,8 @@ class DetectionManager:
             self.detect(self.sess, self.net, self.rgd)
             rospy.loginfo("Grasp center:({},{})".format(self.grasp_center[0], self.grasp_center[1]))
             rospy.loginfo("Grasp angle:{}".format(self.grasp_angle))
-            return graspRequestResponse(self.grasp_center[0], self.grasp_center[1], float(self.grasp_angle))
+            self.grasp_depth = float(self.depth[int(self.grasp_center[1], self.grasp_center[0])]
+            return graspRequestResponse(self.grasp_center[0], self.grasp_center[1], self.grasp_depth, float(self.grasp_angle))
         else:
             rospy.logerr("RGD input image is NULL.")
 
