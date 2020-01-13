@@ -98,13 +98,14 @@ if __name__ == "__main__":
         dType.SetPTPCmd(api, dType.PTPMode.PTPJUMPXYZMode, x1, y1, z1, r1, isQueued=1)
         #dType.dSleep(ms=2000) 
         dType.SetEndEffectorGripper(api, enableCtrl=1,  on=0, isQueued=1)#爪子张开#
-        dType.dSleep(ms=2000) 
+        dType.SetWAITCmd(api, 1, isQueued=1)
 
         #移动到目标处
         #移动到x2处#
         dType.SetPTPCmd(api, dType.PTPMode.PTPJUMPXYZMode, x2, y2, z2, r2, isQueued=1)
         #dType.dSleep(ms=2000) 
         dType.SetEndEffectorGripper(api, enableCtrl=1,  on=1, isQueued=1)#爪子夹取#
+        dType.SetWAITCmd(api, 1, isQueued=1)
         #dType.dSleep(ms=2000) 
 
         #移动到目标上方x1
@@ -121,18 +122,18 @@ if __name__ == "__main__":
         dType.SetPTPCmd(api, dType.PTPMode.PTPMOVJXYZMode, x4, y4, z4, r4, isQueued=1)
         #dType.dSleep(ms=2000)
         dType.SetEndEffectorGripper(api, enableCtrl=1,  on=0, isQueued=1)#爪子张开#
-        dType.dSleep(ms=2000)
+        dType.SetWAITCmd(api, 1, isQueued=1)
 
         #移动到箱子上方#移动到x3处#
         dType.SetPTPCmd(api, dType.PTPMode.PTPMOVJXYZMode, x3, y3, z3, r3, isQueued=1)
         #dType.dSleep(ms=2000)
         dType.SetEndEffectorGripper(api, enableCtrl=1,  on=1, isQueued=1)#爪子闭合#
-        dType.dSleep(ms=2000)
+        dType.SetWAITCmd(api, 1, isQueued=1)
 
         dType.SetEndEffectorGripper(api, enableCtrl=0,  on=1, isQueued=1)#关闭爪子
 
         #归零
-        dType.SetHOMECmd(api,1,1)
+        dType.SetHOMECmd(api,1,isQueued=1)
 
         #Stop to Execute Command Queued
         dType.SetQueuedCmdStopExec(api)     
