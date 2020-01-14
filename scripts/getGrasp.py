@@ -14,7 +14,7 @@ def load_transform(base_path, filename):
     s = None
     R = None
     T = None
-    with open(base_path+filename,'r') as f:
+    with open(base_path+ '/' + filename,'r') as f:
             p = json.load(f)
             s = np.array(p["s"])
             R = np.array(p["R"])
