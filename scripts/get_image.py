@@ -8,12 +8,20 @@ import cv2
 class ImageManager:
     def __init__(self):
         self.rgd_topic = "/rgd_image"
-        self.rgd_pub = rospy.Publisher(self.rgd_topic, Image, queue_size=1)
-        self.depth_pub = rospy.Publisher("/depth_processed", Image, queue_size=1)
-        self.image_topic = rospy.get_param("~image_topic", "/camera/color/image_raw")
-        self.image_sub = rospy.Subscriber(self.image_topic, Image, self.imageCallback)
+        self.rgd_pub = rospy.Publisher(self.rgd_topic, Image, queue_size=1)##创建一个发布者
+
+
+        self.depth_pub = rospy.Publisher("/depth_processed", Image, queue_size=1)#创建一个发布者
+
+
+        self.image_topic = rospy.get_param("~image_topic", "/camera/color/image_raw")#重命名一下
+        self.image_sub = rospy.Subscriber(self.image_topic, Image, self.imageCallback)#
+
+
         self.depth_topic = rospy.get_param("~depth_topic","/camera/aligned_depth_to_color/image_raw")
-        self.depth_sub = rospy.Subscriber(self.depth_topic, Image, self.depthCallback)
+        self.depth_sub = rospy.Subscriber(self.depth_topic, Image, self.depthCallback)#创建一个订阅者
+
+
         self.rgb = None
         self.depth = None
         self.depthr_ = None # Re-ranged depth
@@ -21,23 +29,23 @@ class ImageManager:
         self.cvb = CvBridge()
         rospy.spin()
 
-    def imageCallback(self, data):
+    def imageCallback(self, data):#Image
         self.rgb = np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1)
         self.rgd = self.rgb.copy()
         if self.depthr_ is not None:
             self.rgd[:,:,2] = np.squeeze(self.depthr_)
 
             try:
-                self.rgd_pub.publish(self.cvb.cv2_to_imgmsg(self.rgd, "rgb8"))
+                self.rgd_pub.publish(self.cvb.cv2_to_imgmsg(self.rgd, "rgb8"))#把数据发布出去 #
             except CvBridgeError as e:
                 print(e)
 
     def depthCallback(self, data):
-        self.depth = np.frombuffer(data.data, dtype=np.uint16).reshape(data.height, data.width, -1)
+        self.depth = np.frombuffer(data.data, dtype=np.uint16).reshape(data.height, data.width, -1)#Image.reshape
         self.depthr_ = np.uint8((self.depth.astype(np.float32)-500.)/(1200.-500.)*255) # Re-range depth value to 0~255
 
         try:
-            self.depth_pub.publish(self.cvb.cv2_to_imgmsg(self.depthr_, "mono8"))
+            self.depth_pub.publish(self.cvb.cv2_to_imgmsg(self.depthr_, "mono8"))#把数据发布出去 #
         except CvBridgeError as e:
             print(e)
         
